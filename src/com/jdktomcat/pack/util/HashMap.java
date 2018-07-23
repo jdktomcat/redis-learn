@@ -1,10 +1,4 @@
 package com.jdktomcat.pack.util;
-/*
- *  %W% %E%
- *
- * Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- */
 
 import java.io.IOException;
 import java.io.Serializable;
