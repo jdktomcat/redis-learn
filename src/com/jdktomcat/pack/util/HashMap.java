@@ -6,52 +6,27 @@ import java.util.*;
 
 
 /**
- * Hash table based implementation of the <tt>Map</tt> interface.  This
- * implementation provides all of the optional map operations, and permits
- * <tt>null</tt> values and the <tt>null</tt> key.  (The <tt>HashMap</tt>
- * class is roughly equivalent to <tt>Hashtable</tt>, except that it is
- * unsynchronized and permits nulls.)  This class makes no guarantees as to
- * the order of the map; in particular, it does not guarantee that the order
- * will remain constant over time.
- *
  * HashTable 实现Map接口。但是这个实现提供了所有map操作，而且允许null值与null键值。（
- *   HashMap类基本上与Hashtable功能类似，除了
- * ）
+ * HashMap类基本上与Hashtable功能类似，除了允许null值。）这个类不能保证map的顺序，尤其
+ * 不能保证顺序是不变的。
  *
- * <p>This implementation provides constant-time performance for the basic
- * operations (<tt>get</tt> and <tt>put</tt>), assuming the hash function
- * disperses the elements properly among the buckets.  Iteration over
- * collection views requires time proportional to the "capacity" of the
- * <tt>HashMap</tt> instance (the number of buckets) plus its size (the number
- * of key-value mappings).  Thus, it's very important not to set the initial
- * capacity too high (or the load factor too low) if iteration performance is
- * important.
+ * 该实现类基本操作是常量时间（n）性能消耗（get、put），假装hash函数分散元素正确的槽点。
+ * 遍历集合所需时间和其HashMap实例容量（槽点数量）+ 其Entry数量成比例的，那么，为确保遍历
+ * 性能，最好不要将capacity设置的过高（或者负载因子过低）。
  *
- * <p>An instance of <tt>HashMap</tt> has two parameters that affect its
- * performance: <i>initial capacity</i> and <i>load factor</i>.  The
- * <i>capacity</i> is the number of buckets in the hash table, and the initial
- * capacity is simply the capacity at the time the hash table is created.  The
- * <i>load factor</i> is a measure of how full the hash table is allowed to
- * get before its capacity is automatically increased.  When the number of
- * entries in the hash table exceeds the product of the load factor and the
- * current capacity, the hash table is <i>rehashed</i> (that is, internal data
- * structures are rebuilt) so that the hash table has approximately twice the
- * number of buckets.
+ * HashMap主要有两个参数影响到其性能：初始容量与负载因子。
+ * 初始容量：槽点数量，初始容量只是在hash table创建的时候创建的。
+ * 负载因子：是一种度量（hash tbale有多满在他的容量自动扩容之前）。
+ * 当hash table中entry数量超过负载因子与容量，hash table就会重新hash（
+ * 那就是说，内部的数据结构会被重新创建），那么 hash table拥有大约两倍的槽点数量。
  *
- * <p>As a general rule, the default load factor (.75) offers a good tradeoff
- * between time and space costs.  Higher values decrease the space overhead
- * but increase the lookup cost (reflected in most of the operations of the
- * <tt>HashMap</tt> class, including <tt>get</tt> and <tt>put</tt>).  The
- * expected number of entries in the map and its load factor should be taken
- * into account when setting its initial capacity, so as to minimize the
- * number of rehash operations.  If the initial capacity is greater
- * than the maximum number of entries divided by the load factor, no
- * rehash operations will ever occur.
+ * 通用的规则，默认负载因子为（0.75）提供一个在时间与空间消耗上消耗平衡。这个数值越大，消耗空间越小，而时间消耗反而越大
+ * （反应到HashMap大部分操作，get、put）。你想要存储键值对数量和负载因子应该考虑到初始化槽点容量设置，这样子才能够尽量
+ * 减少rehash操作。如果初始化槽点数量比最大键值对数量除以负载因子，将没有rehash操作。
  *
- * <p>If many mappings are to be stored in a <tt>HashMap</tt> instance,
- * creating it with a sufficiently large capacity will allow the mappings to
- * be stored more efficiently than letting it perform automatic rehashing as
- * needed to grow the table.
+ *
+ * 如果想要HashMap存储很多键值对的话，应该在创建HashMap指定充足的槽点数量，这样子比让HashMap
+ * 自动扩容效率更高。
  *
  * <p><strong>Note that this implementation is not synchronized.</strong>
  * If multiple threads access a hash map concurrently, and at least one of
@@ -62,6 +37,11 @@ import java.util.*;
  * structural modification.)  This is typically accomplished by
  * synchronizing on some object that naturally encapsulates the map.
  * <p>
+ * 需要注意的是：HashMap不是同步的，如果多个线程同时访问hash map的话，至少一个线程修改
+ * map的结构，他必须从外部同步。（修改结构：添加、删除映射。几乎不会修改值关联一个key）。
+ * 这个是典型完成同步利用自然的包裹map
+ *
+ *
  * If no such object exists, the map should be "wrapped" using the
  * {@link Collections#synchronizedMap Collections.synchronizedMap}
  * method.  This is best done at creation time, to prevent accidental
