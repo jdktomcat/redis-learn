@@ -10,10 +10,11 @@ import java.util.Map;
 public class Main {
 
     public static void main(String[] args) {
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>(10);
-        for (int i = 0; i < 200; i++) {
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>(35);
+        for (int i = 0; i < 100; i++) {
             map.put(i, i + 1);
         }
-        System.out.println(map.size());
+        Map<Integer, Integer> otherMap = new HashMap<Integer, Integer>(map);
+        System.out.println(otherMap.size());
     }
 }

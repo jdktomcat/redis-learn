@@ -9,70 +9,46 @@ import java.util.*;
  * HashTable 实现Map接口。但是这个实现提供了所有map操作，而且允许null值与null键值。（
  * HashMap类基本上与Hashtable功能类似，除了允许null值。）这个类不能保证map的顺序，尤其
  * 不能保证顺序是不变的。
- *
+ * <p>
  * 该实现类基本操作是常量时间（n）性能消耗（get、put），假装hash函数分散元素正确的槽点。
  * 遍历集合所需时间和其HashMap实例容量（槽点数量）+ 其Entry数量成比例的，那么，为确保遍历
  * 性能，最好不要将capacity设置的过高（或者负载因子过低）。
- *
+ * <p>
  * HashMap主要有两个参数影响到其性能：初始容量与负载因子。
  * 初始容量：槽点数量，初始容量只是在hash table创建的时候创建的。
  * 负载因子：是一种度量（hash tbale有多满在他的容量自动扩容之前）。
  * 当hash table中entry数量超过负载因子与容量，hash table就会重新hash（
  * 那就是说，内部的数据结构会被重新创建），那么 hash table拥有大约两倍的槽点数量。
- *
+ * <p>
  * 通用的规则，默认负载因子为（0.75）提供一个在时间与空间消耗上消耗平衡。这个数值越大，消耗空间越小，而时间消耗反而越大
  * （反应到HashMap大部分操作，get、put）。你想要存储键值对数量和负载因子应该考虑到初始化槽点容量设置，这样子才能够尽量
  * 减少rehash操作。如果初始化槽点数量比最大键值对数量除以负载因子，将没有rehash操作。
- *
- *
+ * <p>
  * 如果想要HashMap存储很多键值对的话，应该在创建HashMap指定充足的槽点数量，这样子比让HashMap
  * 自动扩容效率更高。
- *
- * <p><strong>Note that this implementation is not synchronized.</strong>
- * If multiple threads access a hash map concurrently, and at least one of
- * the threads modifies the map structurally, it <i>must</i> be
- * synchronized externally.  (A structural modification is any operation
- * that adds or deletes one or more mappings; merely changing the value
- * associated with a key that an instance already contains is not a
- * structural modification.)  This is typically accomplished by
- * synchronizing on some object that naturally encapsulates the map.
  * <p>
  * 需要注意的是：HashMap不是同步的，如果多个线程同时访问hash map的话，至少一个线程修改
  * map的结构，他必须从外部同步。（修改结构：添加、删除映射。几乎不会修改值关联一个key）。
  * 这个是典型完成同步利用自然的包裹map
+ * <p>
+ * 如果没有这样的对象存在的话，map可以用Collections.synchronizedMap包装方法包装一下。最好
+ * 在创建的时候就包装一下，以防不确定不同步访问。
+ * 示例：Map m = Collections.synchronizedMap(new HashMap(...));
+ * <p>
+ * 遍历集合方法返回迭代器是快速失败的：如果map在迭代器创建之后发生结构变化时，除了迭代器自身删除方法，
+ * 迭代器都会抛出ConcurrentModificationException异常。那么，面对同步修改时，迭代器会直接失败清除，
+ * 而不会冒武断的、不确定的行为在未决定的时间。
+ * <p>
+ * 注意：迭代器快速失败行为不能保证如他名称所说，也就是说，不可能完全保证持久化非同步化的
+ * 同时发生的修改。快速失败迭代器抛出ConcurrentModificationException异常
+ * 在最大努力基础上。因此，程序依赖这个异常来保证map的正确性是错误的，迭代器快速失败
+ * 行为只能被用来探测bug。
+ * <p>
+ * 该类为JDK基础集合类。
  *
- *
- * If no such object exists, the map should be "wrapped" using the
- * {@link Collections#synchronizedMap Collections.synchronizedMap}
- * method.  This is best done at creation time, to prevent accidental
- * unsynchronized access to the map:<pre>
- *   Map m = Collections.synchronizedMap(new HashMap(...));</pre>
- *
- * <p>The iterators returned by all of this class's "collection view methods"
- * are <i>fail-fast</i>: if the map is structurally modified at any time after
- * the iterator is created, in any way except through the iterator's own
- * <tt>remove</tt> method, the iterator will throw a
- * {@link ConcurrentModificationException}.  Thus, in the face of concurrent
- * modification, the iterator fails quickly and cleanly, rather than risking
- * arbitrary, non-deterministic behavior at an undetermined time in the
- * future.
- *
- * <p>Note that the fail-fast behavior of an iterator cannot be guaranteed
- * as it is, generally speaking, impossible to make any hard guarantees in the
- * presence of unsynchronized concurrent modification.  Fail-fast iterators
- * throw <tt>ConcurrentModificationException</tt> on a best-effort basis.
- * Therefore, it would be wrong to write a program that depended on this
- * exception for its correctness: <i>the fail-fast behavior of iterators
- * should be used only to detect bugs.</i>
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @param <K> the type of keys maintained by this map
- * @param <V> the type of mapped values
+ * @param <K> the type of keys maintained by this map 键
+ * @param <V> the type of mapped values 值
  * @author 汤旗
- * @version %I%, %G%
  * @see Hashtable
  * @see Object#hashCode()
  * @see Collection
@@ -80,69 +56,61 @@ import java.util.*;
  * @see TreeMap
  * @since 1.2
  */
-
 public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable {
 
     /**
-     * The default initial capacity - MUST be a power of two.
+     * 默认初始化容量：必须是2的幂次方
      */
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
 
     /**
-     * The maximum capacity, used if a higher value is implicitly specified
-     * by either of the constructors with arguments.
-     * MUST be a power of two <= 1<<30.
+     * 最大容量，被用来如果一个指定毫无限制大值参数。必须为2的幂次方 1<<30也即是2的30次方。
      */
     private static final int MAXIMUM_CAPACITY = 1 << 30;
 
     /**
-     * The load factor used when none specified in constructor.
+     * 默认负载因子（0.75）
      */
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
-     * The table, resized as necessary. Length MUST Always be a power of two.
+     * map键值对表，需要的话会重新扩展。长度必须为2的幂次方。
+     * <p>
+     * （被声明为transient的属性不会被序列化，这就是transient关键字的作用）
      */
     private transient HashMap.Entry[] table;
 
     /**
-     * The number of key-value mappings contained in this map.
+     * map中键值对数量
      */
     private transient int size;
 
     /**
-     * The next size value at which to resize (capacity * load factor).
-     *
-     * @serial
+     * 下一次扩容大小
      */
     private int threshold;
 
     /**
-     * The load factor for the hash table.
-     *
-     * @serial
+     * 哈希表负载因子
      */
     private final float loadFactor;
 
     /**
-     * The number of times this HashMap has been structurally modified
-     * Structural modifications are those that change the number of mappings in
-     * the HashMap or otherwise modify its internal structure (e.g.,
-     * rehash).  This field is used to make iterators on Collection-views of
-     * the HashMap fail-fast.  (See ConcurrentModificationException).
+     * HashMap发生结构改变的次数，结构改变就是指键值对数量改变或者内部结构修改。
+     * 这个属性被用来迭代器快速失败。
+     * transient的属性不会被序列化，volatile线程可见性
      */
     private transient volatile int modCount;
 
     /**
-     * Constructs an empty <tt>HashMap</tt> with the specified initial
-     * capacity and load factor.
+     * 构造器：空值 指定容量和负载因子
      *
-     * @param initialCapacity the initial capacity
-     * @param loadFactor      the load factor
-     * @throws IllegalArgumentException if the initial capacity is negative
-     *                                  or the load factor is nonpositive
+     * @param initialCapacity 指定容量
+     * @param loadFactor      负载因子
+     * @throws IllegalArgumentException 容量、负载因子为负值的情况下
      */
     public HashMap(int initialCapacity, float loadFactor) {
+        // 校验参数有效性
         if (initialCapacity < 0) {
             throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
         }
@@ -165,19 +133,17 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Constructs an empty <tt>HashMap</tt> with the specified initial
-     * capacity and the default load factor (0.75).
+     * 构造器：空值 指定容量、默认负载因子0.75
      *
-     * @param initialCapacity the initial capacity.
-     * @throws IllegalArgumentException if the initial capacity is negative.
+     * @param initialCapacity 指定容量.
+     * @throws IllegalArgumentException 指定容量为负值情况下.
      */
     public HashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
     /**
-     * Constructs an empty <tt>HashMap</tt> with the default initial capacity
-     * (16) and the default load factor (0.75).
+     * 构造器：空值 默认容量16、默认负载因子0.75
      */
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
@@ -187,16 +153,15 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Constructs a new <tt>HashMap</tt> with the same mappings as the
-     * specified <tt>Map</tt>.  The <tt>HashMap</tt> is created with
-     * default load factor (0.75) and an initial capacity sufficient to
-     * hold the mappings in the specified <tt>Map</tt>.
+     * 构造器：根据指定Map创建新的HashMap，负载因子为0.75，初始容量能够装下指定Map的键值对。
      *
-     * @param m the map whose mappings are to be placed in this map
-     * @throws NullPointerException if the specified map is null
+     * @param m 指定Map
+     * @throws NullPointerException 如果指定Map为空的情况下
      */
     public HashMap(Map<? extends K, ? extends V> m) {
+        // TODO 注释
         this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);
+
         putAllForCreate(m);
     }
 
@@ -777,7 +742,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
     private abstract class HashIterator<E> implements Iterator<E> {
         /**
-         *  next entry to return
+         * next entry to return
          */
         HashMap.Entry<K, V> next;
         /**
@@ -789,7 +754,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
          */
         int index;
         /**
-         *  current entry
+         * current entry
          */
         HashMap.Entry<K, V> current;
 
@@ -848,14 +813,14 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     private final class ValueIterator extends HashMap.HashIterator {
         @Override
         public V next() {
-            return (V)nextEntry().value;
+            return (V) nextEntry().value;
         }
     }
 
     private final class KeyIterator extends HashMap.HashIterator {
         @Override
         public K next() {
-            return (K)nextEntry().getKey();
+            return (K) nextEntry().getKey();
         }
     }
 
