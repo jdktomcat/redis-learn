@@ -159,50 +159,48 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
      * @throws NullPointerException 如果指定Map为空的情况下
      */
     public HashMap(Map<? extends K, ? extends V> m) {
-        // TODO 注释
+        // 容量 初始map的键值对大小除以默认的负载因子+1 默认容量比较大小取大者
         this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);
-
+        // 将原始数据放到新map中
         putAllForCreate(m);
     }
 
-    // internal utilities
 
     /**
-     * Initialization hook for subclasses. This method is called
-     * in all constructors and pseudo-constructors (clone, readObject)
-     * after HashMap has been initialized but before any entries have
-     * been inserted.  (In the absence of this method, readObject would
-     * require explicit knowledge of subclasses.)
+     * 子类初始化钩子。这个方法被调用在所有的构造器和伪构造器HashMap被初始化完成之后，在
+     * 键值对插入之前。（这个方法缺失的话，readObject方法就会明确要求子类知道这个方法。）
      */
     void init() {
     }
 
     /**
-     * Applies a supplemental hash function to a given hashCode, which
-     * defends against poor quality hash functions.  This is critical
-     * because HashMap uses power-of-two length hash tables, that
-     * otherwise encounter collisions for hashCodes that do not differ
-     * in lower bits. Note: Null keys always map to hash 0, thus index 0.
+     * 适用一个对一个给定哈希编码补充哈希方法，它可以提升哈希方法运行效率低的问题。这是相当要紧
+     * 的，因为HashMap适用2的幂次方长度哈希表，除此以外，遇到哈希编码碰撞的时候会有一些不同。
+     * 提示：Null永远映射到hash 0，索引0.
+     *
+     * @param h 哈希编码
      */
     static int hash(int h) {
-        // This function ensures that hashCodes that differ only by
-        // constant multiples at each bit position have a bounded
-        // number of collisions (approximately 8 at default load factor).
+        // 这个方法确保哈希编码不同一致多样性在每一个位置有一个碰撞边界值。
+        // 默认负载因子情况下大约8个
         h ^= (h >>> 20) ^ (h >>> 12);
         return h ^ (h >>> 7) ^ (h >>> 4);
     }
 
     /**
-     * Returns index for hash code h.
+     * 返回哈希码索引
+     *
+     * @param h      哈希码
+     * @param length 长度
      */
     static int indexFor(int h, int length) {
         return h & (length - 1);
     }
 
     /**
-     * Returns the number of key-value mappings in this map.
+     * 返回键值对数量
      *
-     * @return the number of key-value mappings in this map
+     * @return 键值对数量
      */
     @Override
     public int size() {
@@ -210,9 +208,9 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Returns <tt>true</tt> if this map contains no key-value mappings.
+     * 判空
      *
-     * @return <tt>true</tt> if this map contains no key-value mappings
+     * @return 是否为空
      */
     @Override
     public boolean isEmpty() {
@@ -220,31 +218,24 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Returns the value to which the specified key is mapped,
-     * or {@code null} if this map contains no mapping for the key.
+     * 返回指定键值映射值，或者为空（如果该键值没有映射，也有可能有映射，映射就是null两种情况）
      *
-     * <p>More formally, if this map contains a mapping from a key
-     * {@code k} to a value {@code v} such that {@code (key==null ? k==null :
-     * key.equals(k))}, then this method returns {@code v}; otherwise
-     * it returns {@code null}.  (There can be at most one such mapping.)
-     *
-     * <p>A return value of {@code null} does not <i>necessarily</i>
-     * indicate that the map contains no mapping for the key; it's also
-     * possible that the map explicitly maps the key to {@code null}.
-     * The {@link #containsKey containsKey} operation may be used to
-     * distinguish these two cases.
-     *
+     * @param key 键
      * @see #put(Object, Object)
      */
     @Override
     public V get(Object key) {
+        // 若果键为null的话，返回对应的映射
         if (key == null) {
             return getForNullKey();
         }
+        // 计算哈希
         int hash = hash(key.hashCode());
+        // 先查找到对应的槽索引，找到对应的键值对
         for (HashMap.Entry<K, V> e = table[indexFor(hash, table.length)]; e != null; e = e.next) {
-            Object k;
-            if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+            Object k = e.key;
+            boolean isExist = e.hash == hash && (k == key || key.equals(k));
+            if (isExist) {
                 return e.value;
             }
         }
@@ -298,36 +289,38 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
 
     /**
-     * Associates the specified value with the specified key in this map.
-     * If the map previously contained a mapping for the key, the old
-     * value is replaced.
+     * 联合指定值与指定键在map中，如果map中键之前已经存在映射关系，新的值将覆盖。
      *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @return the previous value associated with <tt>key</tt>, or
-     * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     * (A <tt>null</tt> return can also indicate that the map
-     * previously associated <tt>null</tt> with <tt>key</tt>.)
+     * @param key   关联键
+     * @param value 关联值
+     * @return 原先映射值，如果不存在，将返回null
      */
     @Override
     public V put(K key, V value) {
+        // 判断键是否为空
         if (key == null) {
+            // 设置null键值
             return putForNullKey(value);
         }
+        // 计算哈希
         int hash = hash(key.hashCode());
+        // 计算槽索引
         int i = indexFor(hash, table.length);
+        // 查找对应键记录
         for (HashMap.Entry<K, V> e = table[i]; e != null; e = e.next) {
-            Object k;
-            if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+            Object k = e.key;
+            if (e.hash == hash && (k == key || key.equals(k))) {
                 V oldValue = e.value;
                 e.value = value;
                 e.recordAccess(this);
                 return oldValue;
             }
         }
-
+        // 如果没有，则修改结构次数增加
         modCount++;
+        // 添加记录
         addEntry(hash, key, value, i);
+        // 返回空
         return null;
     }
 
@@ -349,37 +342,31 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * This method is used instead of put by constructors and
-     * pseudoconstructors (clone, readObject).  It does not resize the table,
-     * check for comodification, etc.  It calls createEntry rather than
-     * addEntry.
+     * 在构造器或者伪构造器（复制、读）中，这个方法被用来替代put方法。这个方法不会重新归置hash表、检查同步修改之类的操作。
+     * 它调用createEntry而不是addEntry
      */
     private void putForCreate(K key, V value) {
+        // 计算key的哈希值 key为null时hash为0 不为空则为计算hash
         int hash = (key == null) ? 0 : hash(key.hashCode());
+        // 计算索引值
         int i = indexFor(hash, table.length);
-
         /**
-         * Look for preexisting entry for key.  This will never happen for
-         * clone or deserialize.  It will only happen for construction if the
-         * input Map is a sorted map whose ordering is inconsistent w/ equals.
+         * 查找已经存在key键值对。这个永远不会发生在复制或者反序列化过程中，它只会发生在根据输入
+         * 顺序不一致map构造函数中。
          */
         for (HashMap.Entry<K, V> e = table[i]; e != null; e = e.next) {
-            Object k;
-            if (e.hash == hash &&
-                    ((k = e.key) == key || (key != null && key.equals(k)))) {
+            K k = e.key;
+            // 判断是否已经存在相同key
+            boolean isExist = (e.hash == hash && (k == key || (key != null && key.equals(k))));
+            if (isExist) {
+                // 修改对应键值对值
                 e.value = value;
+                // 直接返回
                 return;
             }
         }
-
+        // 创建键值对
         createEntry(hash, key, value, i);
-    }
-
-    private void putAllForCreate(Map<? extends K, ? extends V> m) {
-        for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry<? extends K, ? extends V> e = i.next();
-            putForCreate(e.getKey(), e.getValue());
-        }
     }
 
     /**
@@ -408,6 +395,21 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         transfer(newTable);
         table = newTable;
         threshold = (int) (newCapacity * loadFactor);
+    }
+
+    /**
+     * 将原始数据放到新的map中
+     *
+     * @param m 原始map
+     */
+    private void putAllForCreate(Map<? extends K, ? extends V> m) {
+        // 迭代器遍历
+        for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
+            // 键值对
+            Map.Entry<? extends K, ? extends V> e = i.next();
+            // 放到新map中
+            putForCreate(e.getKey(), e.getValue());
+        }
     }
 
     /**
@@ -633,10 +635,28 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         return result;
     }
 
+    /**
+     * 键值对对象
+     *
+     * @param <K> 键
+     * @param <V> 值
+     */
     static class Entry<K, V> implements Map.Entry<K, V> {
+        /**
+         * 键名
+         */
         final K key;
+        /**
+         * 值
+         */
         V value;
+        /**
+         * 下一个键值对
+         */
         HashMap.Entry<K, V> next;
+        /**
+         * 哈希值
+         */
         final int hash;
 
         /**
@@ -666,6 +686,12 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             return oldValue;
         }
 
+        /**
+         * 判等
+         *
+         * @param o 对象
+         * @return 判等
+         */
         @Override
         public final boolean equals(Object o) {
             if (!(o instanceof Map.Entry)) {
@@ -674,10 +700,12 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             Map.Entry e = (Map.Entry) o;
             Object k1 = getKey();
             Object k2 = e.getKey();
-            if (k1 == k2 || (k1 != null && k1.equals(k2))) {
+            boolean checkKeyEqual = k1 == k2 || (k1 != null && k1.equals(k2));
+            if (checkKeyEqual) {
                 Object v1 = getValue();
                 Object v2 = e.getValue();
-                if (v1 == v2 || (v1 != null && v1.equals(v2))) {
+                boolean checkValueEqual = v1 == v2 || (v1 != null && v1.equals(v2));
+                if (checkValueEqual) {
                     return true;
                 }
             }
@@ -686,8 +714,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
         @Override
         public final int hashCode() {
-            return (key == null ? 0 : key.hashCode()) ^
-                    (value == null ? 0 : value.hashCode());
+            return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
         }
 
         @Override
@@ -696,16 +723,13 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * This method is invoked whenever the value in an entry is
-         * overwritten by an invocation of put(k,v) for a key k that's already
-         * in the HashMap.
+         * 这个方法被调用在任意时刻调用put方法时，当key已经存在时。
          */
         void recordAccess(HashMap<K, V> m) {
         }
 
         /**
-         * This method is invoked whenever the entry is
-         * removed from the table.
+         * 这个方法被调用在任意时刻调用remove方法时。
          */
         void recordRemoval(HashMap<K, V> m) {
         }
@@ -727,16 +751,20 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Like addEntry except that this version is used when creating entries
-     * as part of Map construction or "pseudo-construction" (cloning,
-     * deserialization).  This version needn't worry about resizing the table.
-     * <p>
-     * Subclass overrides this to alter the behavior of HashMap(Map),
-     * clone, and readObject.
+     * 就像addEntry除了这个版本被使用当创建映射表作为map构造器（伪构造：克隆反序列化）。这个方法
+     * 不用担心重置table。子类重写该方法当克隆与读时。
+     *
+     * @param hash        哈希
+     * @param key         键值
+     * @param value       值
+     * @param bucketIndex 槽点索引
      */
     void createEntry(int hash, K key, V value, int bucketIndex) {
+        // 获取槽点键值对象
         HashMap.Entry<K, V> e = table[bucketIndex];
+        // 创建键值对并赋值到对应的槽点位置
         table[bucketIndex] = new HashMap.Entry<K, V>(hash, key, value, e);
+        // 大小加1
         size++;
     }
 
