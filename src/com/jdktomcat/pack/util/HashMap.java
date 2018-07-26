@@ -188,7 +188,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * 返回哈希码索引
+     * 返回哈希码索引(也就是h取余length)
      *
      * @param h      哈希码
      * @param length 长度
@@ -377,23 +377,31 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
      * If current capacity is MAXIMUM_CAPACITY, this method does not
      * resize the map, but sets threshold to Integer.MAX_VALUE.
      * This has the effect of preventing future calls.
+     * <p>
+     * 重置该map哈希内容到新的大容量数组。这个方法将被自动调用当map容量达到threshold设定值时。
+     * 如果现在容量是最大容量时，这个方法不会重置map，会设置threshold为整形最大值，这样子就会
+     * 防止以后再执行该方法。
      *
-     * @param newCapacity the new capacity, MUST be a power of two;
-     *                    must be greater than current capacity unless current
-     *                    capacity is MAXIMUM_CAPACITY (in which case value
-     *                    is irrelevant).
+     * @param newCapacity 新容量，必须是2的幂次方，一定要大于现在容量（除非是已经到了最大容量，以防无效参数）
      */
     void resize(int newCapacity) {
+        // 原先键值对数组
         HashMap.Entry[] oldTable = table;
+        // 原先长度
         int oldCapacity = oldTable.length;
+        // 判断是否已经达到最大容量
         if (oldCapacity == MAXIMUM_CAPACITY) {
+            // 阈值
             threshold = Integer.MAX_VALUE;
             return;
         }
-
+        // 创建新键值对数组
         HashMap.Entry[] newTable = new HashMap.Entry[newCapacity];
+        // 将老数据转移到新键值对数组上
         transfer(newTable);
+        // 指定为新键值对数组
         table = newTable;
+        // 设置下次重置阈值
         threshold = (int) (newCapacity * loadFactor);
     }
 
@@ -413,21 +421,35 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Transfers all entries from current table to newTable.
+     * 将所有记录转移到新表
+     *
+     * @param newTable 新表
      */
     void transfer(HashMap.Entry[] newTable) {
+        // 旧表
         HashMap.Entry[] src = table;
+        // 新长度
         int newCapacity = newTable.length;
+        // 遍历老表记录
         for (int j = 0; j < src.length; j++) {
+            // 记录
             HashMap.Entry<K, V> e = src[j];
+            // 判空
             if (e != null) {
+                // 将老表位置置空
                 src[j] = null;
                 do {
+                    // 获取下一个记录
                     HashMap.Entry<K, V> next = e.next;
+                    // 计算在新表中桶索引
                     int i = indexFor(e.hash, newCapacity);
+                    // 设置记录下一个记录为原先桶索引处记录
                     e.next = newTable[i];
+                    // 然后将记录放置到桶索引处
                     newTable[i] = e;
+                    // 传递到原先下一个记录
                     e = next;
+                    // 直到记录为空
                 } while (e != null);
             }
         }
@@ -736,16 +758,17 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Adds a new entry with the specified key, value and hash code to
-     * the specified bucket.  It is the responsibility of this
-     * method to resize the table if appropriate.
-     * <p>
-     * Subclass overrides this to alter the behavior of put method.
+     * 添加一个新的指定键、值、哈希码、指定桶记录。这个方法有责任在满足条件重置表。
+     * 子类重写该方法来修改put方法的操作行为。
      */
     void addEntry(int hash, K key, V value, int bucketIndex) {
+        // 获取原先索引桶
         HashMap.Entry<K, V> e = table[bucketIndex];
+        // 将该索引处记录设置为新增记录
         table[bucketIndex] = new HashMap.Entry<K, V>(hash, key, value, e);
+        // 如果表大小达到重置大小条件的话，需要重置大小
         if (size++ >= threshold) {
+            // 重置大小为原先表长度的两倍
             resize(2 * table.length);
         }
     }
