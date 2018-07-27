@@ -1,5 +1,6 @@
 package com.jdktomcat.pack;
 
+import com.jdktomcat.pack.bean.Person;
 import com.jdktomcat.pack.util.HashMap;
 
 import java.util.Map;
@@ -10,11 +11,11 @@ import java.util.Map;
 public class Main {
 
     public static void main(String[] args) {
-        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(15,2.0f);
+        HashMap<Person, Integer> map = new HashMap<Person, Integer>(15, 2.0f);
         for (int i = 0; i < 100; i++) {
-            map.put(i, i + 1);
+            map.put(new Person("Student-" + i, i), i);
         }
-        Map<Integer, Integer> otherMap = new HashMap<Integer, Integer>(map);
+        Map<Person, Integer> otherMap = new HashMap<Person, Integer>(map);
         System.out.println(otherMap.size());
     }
 }

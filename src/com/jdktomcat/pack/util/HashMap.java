@@ -456,16 +456,16 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Copies all of the mappings from the specified map to this map.
-     * These mappings will replace any mappings that this map had for
-     * any of the keys currently in the specified map.
+     * 复制所有的映射到本map中，这些映射将覆盖本map中的键值对。
      *
-     * @param m mappings to be stored in this map
-     * @throws NullPointerException if the specified map is null
+     * @param m 目标map
+     * @throws NullPointerException 空指针异常，当m
      */
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
+        // 要被添加的键数量
         int numKeysToBeAdded = m.size();
+        // 如果数量为空的话，直接返回
         if (numKeysToBeAdded == 0) {
             return;
         }
