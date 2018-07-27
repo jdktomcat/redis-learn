@@ -471,31 +471,28 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /*
-         * Expand the map if the map if the number of mappings to be added
-         * is greater than or equal to threshold.  This is conservative; the
-         * obvious condition is (m.size() + size) >= threshold, but this
-         * condition could result in a map with twice the appropriate capacity,
-         * if the keys to be added overlap with the keys already in this map.
-         * By using the conservative calculation, we subject ourself
-         * to at most one extra resize.
          * 扩展map如果map的数量如果达到threshold（阈值），这是保守的。明显的条件是（m的大小加上现大小不小于
-         * 阈值，但是这个条件会导致）
-         *
+         * 阈值，但是这个条件会导致map两倍适当的容量。如果需要添加的键已经在map中时。使用保守计算，我们提供了另外
+         * 的方式重置大小）
          */
+        // 判断添加数量与阈值大小:大于阈值
         if (numKeysToBeAdded > threshold) {
+            // 目标容量
             int targetCapacity = (int) (numKeysToBeAdded / loadFactor + 1);
             if (targetCapacity > MAXIMUM_CAPACITY) {
                 targetCapacity = MAXIMUM_CAPACITY;
             }
             int newCapacity = table.length;
+            // 计算大小
             while (newCapacity < targetCapacity) {
                 newCapacity <<= 1;
             }
+            // 判断是否大于现在的表长度
             if (newCapacity > table.length) {
                 resize(newCapacity);
             }
         }
-
+        // 遍历设置映射
         for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
             Map.Entry<? extends K, ? extends V> e = i.next();
             put(e.getKey(), e.getValue());
@@ -504,6 +501,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
     /**
      * Removes the mapping for the specified key from this map if present.
+     * 
      *
      * @param key key whose mapping is to be removed from the map
      * @return the previous value associated with <tt>key</tt>, or
