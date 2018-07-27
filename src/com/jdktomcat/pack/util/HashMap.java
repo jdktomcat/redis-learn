@@ -501,7 +501,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
     /**
      * Removes the mapping for the specified key from this map if present.
-     * 
      *
      * @param key key whose mapping is to be removed from the map
      * @return the previous value associated with <tt>key</tt>, or
@@ -528,22 +527,14 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
         while (e != null) {
             HashMap.Entry<K, V> next = e.next;
-            Object k;
-            if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) {
-                modCount++;
-                size--;
-                if (prev == e) {
-                    table[i] = next;
-                } else {
-                    prev.next = next;
-                }
-                e.recordRemoval(this);
+            Object k = e.key;
+            if (e.hash == hash && (k == key || (key != null && key.equals(k)))) {
+                handle(e, i, prev, next);
                 return e;
             }
             prev = e;
             e = next;
         }
-
         return e;
     }
 
@@ -561,24 +552,27 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         int i = indexFor(hash, table.length);
         HashMap.Entry<K, V> prev = table[i];
         HashMap.Entry<K, V> e = prev;
-
         while (e != null) {
             HashMap.Entry<K, V> next = e.next;
             if (e.hash == hash && e.equals(entry)) {
-                modCount++;
-                size--;
-                if (prev == e) {
-                    table[i] = next;
-                } else {
-                    prev.next = next;
-                }
-                e.recordRemoval(this);
+                handle(e, i, prev, next);
                 return e;
             }
             prev = e;
             e = next;
         }
         return e;
+    }
+
+    private void handle(HashMap.Entry<K, V> e, int i, HashMap.Entry<K, V> prev, HashMap.Entry<K, V> next) {
+        modCount++;
+        size--;
+        if (prev == e) {
+            table[i] = next;
+        } else {
+            prev.next = next;
+        }
+        e.recordRemoval(this);
     }
 
     /**
