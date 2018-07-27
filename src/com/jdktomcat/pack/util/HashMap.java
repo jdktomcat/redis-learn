@@ -478,6 +478,9 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
          * if the keys to be added overlap with the keys already in this map.
          * By using the conservative calculation, we subject ourself
          * to at most one extra resize.
+         * 扩展map如果map的数量如果达到threshold（阈值），这是保守的。明显的条件是（m的大小加上现大小不小于
+         * 阈值，但是这个条件会导致）
+         *
          */
         if (numKeysToBeAdded > threshold) {
             int targetCapacity = (int) (numKeysToBeAdded / loadFactor + 1);
