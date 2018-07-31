@@ -11,5 +11,5 @@ public class SuperClass {
         System.out.println("SuperClass Init!!");
     }
 
-    public static final int value = 1213;
+    public static int value = 1213;
 }
