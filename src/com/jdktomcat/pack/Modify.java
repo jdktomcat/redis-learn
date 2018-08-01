@@ -1,12 +1,12 @@
 package com.jdktomcat.pack;
 
-import org.gjt.jclasslib.io.ByteCodeInput;
-import org.gjt.jclasslib.io.ByteCodeInputStream;
+import org.gjt.jclasslib.io.ByteCodeOutput;
+import org.gjt.jclasslib.io.ByteCodeOutputStream;
 import org.gjt.jclasslib.structures.AttributeInfo;
 import org.gjt.jclasslib.structures.ClassFile;
 import org.gjt.jclasslib.structures.MethodInfo;
 
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -38,7 +38,10 @@ public class Modify {
                 String attributeName = attributeInfo.getName();
                 int length = attributeInfo.getAttributeLength();
                 byte[] byteArray = new byte[length];
-                ByteCodeInput byteCodeInput = new ByteCodeInputStream(new ByteArrayInputStream(byteArray));
+                ByteCodeOutput byteCodeOutput = new ByteCodeOutputStream(new ByteArrayOutputStream());
+                attributeInfo.write(byteCodeOutput);
+                byteCodeOutput.write(byteArray);
+
                 for (int m = 0; m < length; m++) {
 
                     System.out.println(methodName + ":" + attributeName + ":" + m);
