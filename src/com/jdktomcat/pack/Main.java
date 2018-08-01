@@ -1,6 +1,6 @@
 package com.jdktomcat.pack;
 
-import com.jdktomcat.pack.jvm.classload.SubClass;
+import java.io.File;
 
 /**
  * @author Administrator
@@ -8,7 +8,8 @@ import com.jdktomcat.pack.jvm.classload.SubClass;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println(SubClass.value);
+        String str = "/conf-descriptor.properties";
+        System.out.println(str.replace("/", File.separator));
     }
 }
 
