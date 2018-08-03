@@ -1,5 +1,7 @@
 package com.jdktomcat.pack.bytecode;
 
+import java.io.File;
+
 /**
  * 类描述：
  *
@@ -7,17 +9,7 @@ package com.jdktomcat.pack.bytecode;
  * @date 2018-08-03
  */
 public class Test {
-
-    public static void main(String[] args) {
-        System.out.println("123");
-        System.out.println("345");
-    }
-
-    public void m1() {
-        System.out.println("m1");
-    }
-
-    public void m2() {
-        System.out.println("m2");
+    public void makeup(String content){
+        content.replace("/", File.separator);
     }
 }

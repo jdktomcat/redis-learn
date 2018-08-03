@@ -9,8 +9,8 @@ package com.jdktomcat.pack.bytecode;
 public class Test2 {
     public static void main(String[] args) {
         System.out.println("test2");
-        Test t1 = new Test();
-        t1.m1();
-        t1.m2();
+//        Test t1 = new Test();
+//        t1.m1();
+//        t1.m2();
     }
 }
