@@ -1,34 +1,58 @@
 package com.jdktomcat.pack.uuid;
 
 /**
- * 类描述：
+ * 类描述：雪片id生成器
  *
  * @author 汤旗
  * @date 2018-08-07
  */
 
 public class SnowflakeIdGenerator {
-    //================================================Algorithm's Parameter=============================================
-    // 系统开始时间截 (UTC 2017-06-28 00:00:00)
+
+    /**
+     * 系统开始时间截 (UTC 2017-06-28 00:00:00)
+     */
     private final long startTime = 1498608000000L;
-    // 机器id所占的位数
+
+    /**
+     * 机器id所占的位数
+     */
     private final long workerIdBits = 5L;
-    // 数据标识id所占的位数
+
+    /**
+     * 数据标识id所占的位数
+     */
     private final long dataCenterIdBits = 5L;
-    // 支持的最大机器id(十进制)，结果是31 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
-    // -1L 左移 5位 (worker id 所占位数) 即 5位二进制所能获得的最大十进制数 - 31
+
+    /**
+     * 支持的最大机器id(十进制)，结果是31 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)
+     * -1L 左移 5位 (worker id 所占位数) 即 5位二进制所能获得的最大十进制数 - 31
+     */
     private final long maxWorkerId = -1L ^ (-1L << workerIdBits);
-    // 支持的最大数据标识id - 31
+
+    /**
+     * 支持的最大数据标识id - 31
+     */
     private final long maxDataCenterId = -1L ^ (-1L << dataCenterIdBits);
-    // 序列在id中占的位数
+    /**
+     * 序列在id中占的位数
+     */
     private final long sequenceBits = 12L;
-    // 机器ID 左移位数 - 12 (即末 sequence 所占用的位数)
+    /**
+     * 机器ID 左移位数 - 12 (即末 sequence 所占用的位数)
+     */
     private final long workerIdMoveBits = sequenceBits;
-    // 数据标识id 左移位数 - 17(12+5)
+    /**
+     * 数据标识id 左移位数 - 17(12+5)
+     */
     private final long dataCenterIdMoveBits = sequenceBits + workerIdBits;
-    // 时间截向 左移位数 - 22(5+5+12)
+    /**
+     * 时间截向 左移位数 - 22(5+5+12)
+     */
     private final long timestampMoveBits = sequenceBits + workerIdBits + dataCenterIdBits;
-    // 生成序列的掩码(12位所对应的最大整数值)，这里为4095 (0b111111111111=0xfff=4095)
+    /**
+     * 时间截向 左移位数 - 22(5+5+12)
+     */
     private final long sequenceMask = -1L ^ (-1L << sequenceBits);
     /**
      * 工作机器ID(0~31)
@@ -64,13 +88,17 @@ public class SnowflakeIdGenerator {
         this.dataCenterId = dataCenterId;
     }
 
-    // 线程安全的获得下一个 ID 的方法
+    /**
+     * 线程安全的获得下一个 ID 的方法
+     *
+     * @return id
+     */
     public synchronized long nextId() {
         long timestamp = currentTime();
         //如果当前时间小于上一次ID生成的时间戳: 说明系统时钟回退过 - 这个时候应当抛出异常
         if (timestamp < lastTimestamp) {
-            throw new RuntimeException(
-                    String.format("Clock moved backwards.  Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
+            throw new RuntimeException(String.format("Clock moved backwards.  Refusing to generate id for %d milliseconds",
+                    lastTimestamp - timestamp));
         }
         //如果是同一时间生成的，则进行毫秒内序列
         if (lastTimestamp == timestamp) {
@@ -80,9 +108,8 @@ public class SnowflakeIdGenerator {
                 //阻塞到下一个毫秒,获得新的时间戳
                 timestamp = blockTillNextMillis(lastTimestamp);
             }
-        }
-        //时间戳改变，毫秒内序列重置
-        else {
+            //时间戳改变，毫秒内序列重置
+        } else {
             sequence = 0L;
         }
         //上次生成ID的时间截
@@ -94,7 +121,12 @@ public class SnowflakeIdGenerator {
                 | sequence;
     }
 
-    // 阻塞到下一个毫秒 即 直到获得新的时间戳
+    /**
+     * 阻塞到下一个毫秒 即 直到获得新的时间戳
+     *
+     * @param lastTimestamp 时间戳
+     * @return 时间戳
+     */
     protected long blockTillNextMillis(long lastTimestamp) {
         long timestamp = currentTime();
         while (timestamp <= lastTimestamp) {
@@ -103,7 +135,11 @@ public class SnowflakeIdGenerator {
         return timestamp;
     }
 
-    // 获得以毫秒为单位的当前时间
+    /**
+     * 获得以毫秒为单位的当前时间
+     *
+     * @return 时间点
+     */
     protected long currentTime() {
         return System.currentTimeMillis();
     }
