@@ -786,45 +786,73 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         size++;
     }
 
+    /**
+     * 迭代器
+     *
+     * @param <E>
+     */
     private abstract class HashIterator<E> implements Iterator<E> {
+
         /**
-         * next entry to return
+         * 下一个序列对
          */
         HashMap.Entry<K, V> next;
+
         /**
-         * For fast-fail
+         * 期望mod计数（用于快速失败）
          */
         int expectedModCount;
+
         /**
-         * current slot
+         * 现在槽索引
          */
         int index;
+
         /**
-         * current entry
+         * 现在序列对
          */
         HashMap.Entry<K, V> current;
 
+        /**
+         * 构造器
+         */
         HashIterator() {
+            // 计数值
             expectedModCount = modCount;
-            // advance to first entry
+            // 访问第一个键值对
             if (size > 0) {
                 HashMap.Entry[] t = table;
+                // 寻找第一个键值对（槽索引处为空）
                 while (index < t.length && (next = t[index++]) == null) {
                     ;
                 }
             }
         }
 
+        /**
+         * 判断是否还有下一个
+         *
+         * @return 是否
+         */
         @Override
         public final boolean hasNext() {
             return next != null;
         }
 
+        /**
+         * 获取下一个键值对
+         *
+         * @return 键值对
+         */
         final HashMap.Entry<K, V> nextEntry() {
+            // 判断修改计数器是否与期望值是否相等
             if (modCount != expectedModCount) {
+                // 抛出同步异常
                 throw new ConcurrentModificationException();
             }
+            // 下一个键值对
             HashMap.Entry<K, V> e = next;
+            // 判空
             if (e == null) {
                 throw new NoSuchElementException();
             }
@@ -959,6 +987,9 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         return (vs != null ? vs : (values = new HashMap.Values()));
     }
 
+    /**
+     * 值
+     */
     private final class Values extends AbstractCollection<V> {
         @Override
         public Iterator<V> iterator() {

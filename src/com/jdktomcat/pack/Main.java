@@ -1,9 +1,6 @@
 package com.jdktomcat.pack;
 
-import com.jdktomcat.pack.bean.Person;
-import com.jdktomcat.pack.util.HashMap;
-
-import java.util.Map;
+import java.io.File;
 
 /**
  * @author Administrator
@@ -11,11 +8,8 @@ import java.util.Map;
 public class Main {
 
     public static void main(String[] args) {
-        HashMap<Person, Integer> map = new HashMap<Person, Integer>(15, 2.0f);
-        for (int i = 0; i < 100; i++) {
-            map.put(new Person("Student-" + i, i), i);
-        }
-        Map<Person, Integer> otherMap = new HashMap<Person, Integer>(map);
-        System.out.println(otherMap.size());
+        String str = "/conf-descriptor.properties";
+        System.out.println(str.replace("/", File.separator));
     }
 }
+
