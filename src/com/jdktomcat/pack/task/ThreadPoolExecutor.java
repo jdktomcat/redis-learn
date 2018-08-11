@@ -163,13 +163,15 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * workerCount, indicating the effective number of threads
      * runState,    indicating whether running, shutting down etc
      * <p>
-     * In order to pack them into one int, we limit workerCount to
+     * In order to pack them into one int, we limit workerCount tos
      * (2^29)-1 (about 500 million) threads rather than (2^31)-1 (2
      * billion) otherwise representable. If this is ever an issue in
      * the future, the variable can be changed to be an AtomicLong,
      * and the shift/mask constants below adjusted. But until the need
      * arises, this code is a bit faster and simpler using an int.
      * <p>
+     *
+     *
      * The workerCount is the number of workers that have been
      * permitted to start and not permitted to stop.  The value may be
      * transiently different from the actual number of live threads,
