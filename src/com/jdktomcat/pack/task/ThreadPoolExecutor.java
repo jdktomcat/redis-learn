@@ -22,10 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * Executors#newSingleThreadExecutor 单线程池），为常用场景提供预设置。否则，使用以下
  * 指导当你需要手动配置调整这个类:
  *
- * <dl>
- *
- * <dt>Core and maximum pool sizes</dt>
- *
  * 核心与最大池大小
  * ThreadPoolExecutor能够自动调整池大小（getPoolSize），在corePoolSize与
  * maximumPoolSize之间。getCorePoolSize、getMaximumPoolSize
@@ -51,24 +47,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * 你可以修改线程的名称、线程组、优先级、后台线程等。如果线程工厂被请求创建线程失败，newThread返回null，执行
  * 器将继续执行，但是可能所有的任务会被执行。线程应该拥有修改线程运行时权限。如果工作线程或者其他线程使用线程池
  * 但是又没有获取这个权限，服务将被降解：配置修改可能不会及时生效，并且一个关闭池可能仍然处于未停止状态。
- *
- *
- * <dt>Keep-alive times</dt>
- *
- * <dd>If the pool currently has more than corePoolSize threads,
- * excess threads will be terminated if they have been idle for more
- * than the keepAliveTime (see {@link #getKeepAliveTime(TimeUnit)}).
- * This provides a means of reducing resource consumption when the
- * pool is not being actively used. If the pool becomes more active
- * later, new threads will be constructed. This parameter can also be
- * changed dynamically using method {@link #setKeepAliveTime(long,
- * TimeUnit)}.  Using a value of {@code Long.MAX_VALUE} {@link
- * TimeUnit#NANOSECONDS} effectively disables idle threads from ever
- * terminating prior to shut down. By default, the keep-alive policy
- * applies only when there are more than corePoolSize threads. But
- * method {@link #allowCoreThreadTimeOut(boolean)} can be used to
- * apply this time-out policy to core threads as well, so long as the
- * keepAliveTime value is non-zero. </dd>
  *
  * 存活时间
  *
@@ -136,6 +114,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@link #remove(Runnable)} and {@link #purge} are available to
  * assist in storage reclamation when large numbers of queued tasks
  * become cancelled.</dd>
+ *
+ *
  *
  * <dt>Finalization</dt>
  *
