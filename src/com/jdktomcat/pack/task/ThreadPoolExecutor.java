@@ -166,7 +166,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      *
      * 属性workerCount是允许启动不允许停止的工作线程数量。该值可能会与真实活跃线程数量短暂不同，
      * 例如，当请求一个线程工厂创建线程失败时，当一个将要退出的线程在终止之前还在运行、记录。
-     * 用户可见池大小是指目前执行线程集合大小
+     * 用户可见池大小是指目前执行线程集合大小.
      *
      * The runState provides the main lifecycle control, taking on values:
      * <p>
