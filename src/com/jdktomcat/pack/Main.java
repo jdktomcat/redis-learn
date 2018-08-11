@@ -8,8 +8,8 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        String str = "/conf-descriptor.properties";
-        System.out.println(str.replace("/", File.separator));
+        double max = Math.pow(2, 29);
+        System.out.println(max + "");
     }
 }
 

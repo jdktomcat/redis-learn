@@ -158,28 +158,16 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
-     * The main pool control state, ctl, is an atomic integer packing
-     * two conceptual fields
-     * workerCount, indicating the effective number of threads
-     * runState,    indicating whether running, shutting down etc
-     * <p>
-     * In order to pack them into one int, we limit workerCount tos
-     * (2^29)-1 (about 500 million) threads rather than (2^31)-1 (2
-     * billion) otherwise representable. If this is ever an issue in
-     * the future, the variable can be changed to be an AtomicLong,
-     * and the shift/mask constants below adjusted. But until the need
-     * arises, this code is a bit faster and simpler using an int.
-     * <p>
+     *线程池主要控制状态，ctl，是一个原子整型，由两个概念属性组成：workerCount（有效线程数量）
+     * runState（状态运行、关闭等）。为了将这两个组装成一个整型，将限制workerCount最大为２
+     * 的29次方－１（大概有500百万）线程而不是２的32次方－１（２０亿）要不然的话表示不了。
+     * 如果这里在今后仍然是一个问题的话，这个变量将会改为AtomicLong类型，下面移位/掩码常量会作
+     * 相应的调整。但是除非需求到了那个地步才会修改，目前使用整型比较快捷的。
      *
+     * 属性workerCount是允许启动不允许停止的工作线程数量。该值可能会与真实活跃线程数量短暂不同，
+     * 例如，当请求一个线程工厂创建线程失败时，当一个将要退出的线程在终止之前还在运行、记录。
+     * 用户可见池大小是指目前执行线程集合大小
      *
-     * The workerCount is the number of workers that have been
-     * permitted to start and not permitted to stop.  The value may be
-     * transiently different from the actual number of live threads,
-     * for example when a ThreadFactory fails to create a thread when
-     * asked, and when exiting threads are still performing
-     * bookkeeping before terminating. The user-visible pool size is
-     * reported as the current size of the workers set.
-     * <p>
      * The runState provides the main lifecycle control, taking on values:
      * <p>
      * RUNNING:  Accept new tasks and process queued tasks
