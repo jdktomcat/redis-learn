@@ -96,89 +96,37 @@ import java.util.concurrent.locks.ReentrantLock;
  * 来防止拒绝新提交的任务。这同时反过来承认，当命令持续到达时，无限制线程可能性增长将比任务可以被执行
  * 更快。
  *
- * <li><em> Unbounded queues.</em> Using an unbounded queue (for
- * example a {@link LinkedBlockingQueue} without a predefined
- * capacity) will cause new tasks to wait in the queue when all
- * corePoolSize threads are busy. Thus, no more than corePoolSize
- * threads will ever be created. (And the value of the maximumPoolSize
- * therefore doesn't have any effect.)  This may be appropriate when
- * each task is completely independent of others, so tasks cannot
- * affect each others execution; for example, in a web page server.
- * While this style of queuing can be useful in smoothing out
- * transient bursts of requests, it admits the possibility of
- * unbounded work queue growth when commands continue to arrive on
- * average faster than they can be processed.  </li>
+ * 无边界队列：使用无边界队列（如LinkedBlockingQueue，没有预定义容量）将导致新任务在队列中等待，
+ * 在所有的核心线程都在忙碌。因此，没有更多于核心线程数的线程被创建。（此时最大池线程数将不生效。）
+ * 这种队列适用于那种之间完全独立的任务，也就是说任务不能影响其他任务的执行。例如，在一个网页服务器中。
+ * 虽然说这种队列方式对于平息请求瞬间爆炸非常有用，但不得不承认存在一种肯能性，无边界队列在增长速度
+ * 将会超过处理速度，当有命令源源不断到达时。
  *
- * 无限制队列：
+ * 有界队列：有界队列（如ArrayBlockingQueue）在当使用有限的maximumPoolSizes可以帮助阻止资源耗尽，
+ * 但是很难去调整与控制。队列大小和池最大容量将会被彼此权衡：使用大队列和小池能够降低CPU使用率，OS资源，
+ * 线程上下文切换开销，但是可能导致人为低吞吐量。如果任务经常阻塞（IO限制）系统将会安排比你预先允许更多的
+ * 线程。使用小队列一般需要大池，提高CPU使用率，但是可能在上下文切换及排期上的开销增长到不可接受的地步，
+ * 此时也会降低吞吐量。
  *
- * <li><em>Bounded queues.</em> A bounded queue (for example, an
- * {@link ArrayBlockingQueue}) helps prevent resource exhaustion when
- * used with finite maximumPoolSizes, but can be more difficult to
- * tune and control.  Queue sizes and maximum pool sizes may be traded
- * off for each other: Using large queues and small pools minimizes
- * CPU usage, OS resources, and context-switching overhead, but can
- * lead to artificially low throughput.  If tasks frequently block (for
- * example if they are I/O bound), a system may be able to schedule
- * time for more threads than you otherwise allow. Use of small queues
- * generally requires larger pool sizes, which keeps CPUs busier but
- * may encounter unacceptable scheduling overhead, which also
- * decreases throughput.  </li>
+ * 任务拒绝：在方法execute(Runnable)提交新任务时会被拒绝，当执行器已经被关闭或者当执行器使用有限制
+ * 最大线程数和工作队列容量，并且已经饱和的情况时。在上面情形中，调用execute方法时，会调用
+ * RejectedExecutionHandler#rejectedExecution(Runnable, ThreadPoolExecutor)方法，提供
+ * 有如下四种预定义策略：
+ * 　　１.默认：java.util.concurrent.ThreadPoolExecutor.AbortPolicy，这种策略在调用execute
+ * 　　　 方法时会抛出一个运行时异常RejectedExecutionException。
+ * 　　２.java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy,调用线程自己去运行任务。
+ * 	　　 这种策略提供了一种简单反馈控制机制：降低新任务提交速度。
+ *    ３.java.util.concurrent.ThreadPoolExecutor.DiscardPolicy，任务不会被执行，简单丢弃。
+ * 	　４.java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy，如果线程池没有被关
+ * 　　　闭，在队列头部的任务将被丢弃，然后在重试提交，直到成功。
+ *可以自己去自定义RejectedExecutionHandler，如果这么做的话需要特别注意策略设计只能适用于特定的容量
+ * 或者队列策略。
  *
- * </ol>
- *
- * </dd>
- *
- * <dt>Rejected tasks</dt>
- *
- * <dd>New tasks submitted in method {@link #execute(Runnable)} will be
- * <em>rejected</em> when the Executor has been shut down, and also when
- * the Executor uses finite bounds for both maximum threads and work queue
- * capacity, and is saturated.  In either case, the {@code execute} method
- * invokes the {@link
- * RejectedExecutionHandler#rejectedExecution(Runnable, ThreadPoolExecutor)}
- * method of its {@link RejectedExecutionHandler}.  Four predefined handler
- * policies are provided:
- *
- * <ol>
- *
- * <li> In the default {@link java.util.concurrent.ThreadPoolExecutor.AbortPolicy}, the
- * handler throws a runtime {@link RejectedExecutionException} upon
- * rejection. </li>
- *
- * <li> In {@link java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy}, the thread
- * that invokes {@code execute} itself runs the task. This provides a
- * simple feedback control mechanism that will slow down the rate that
- * new tasks are submitted. </li>
- *
- * <li> In {@link java.util.concurrent.ThreadPoolExecutor.DiscardPolicy}, a task that
- * cannot be executed is simply dropped.  </li>
- *
- * <li>In {@link java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy}, if the
- * executor is not shut down, the task at the head of the work queue
- * is dropped, and then execution is retried (which can fail again,
- * causing this to be repeated.) </li>
- *
- * </ol>
- * <p>
- * It is possible to define and use other kinds of {@link
- * RejectedExecutionHandler} classes. Doing so requires some care
- * especially when policies are designed to work only under particular
- * capacity or queuing policies. </dd>
- *
- * <dt>Hook methods</dt>
- *
- * <dd>This class provides {@code protected} overridable
- * {@link #beforeExecute(Thread, Runnable)} and
- * {@link #afterExecute(Runnable, Throwable)} methods that are called
- * before and after execution of each task.  These can be used to
- * manipulate the execution environment; for example, reinitializing
- * ThreadLocals, gathering statistics, or adding log entries.
- * Additionally, method {@link #terminated} can be overridden to perform
- * any special processing that needs to be done once the Executor has
- * fully terminated.
- *
- * <p>If hook or callback methods throw exceptions, internal worker
- * threads may in turn fail and abruptly terminate.</dd>
+ *钩子方法：这类提供了protected可覆盖方法：beforeExecute(Thread, Runnable)、
+ *afterExecute(Runnable, Throwable)，可以在每个提交任务运行之前和之后回调这两个方法。
+ *这两个可以被用来操作执行环境，例如，重新初始化ThreadLocals变量，收集分析信息，或者
+ *添加日志实体。另外，方法terminated可以被重写来执行任意当执行器已经全部停掉之后需要做
+ *的特殊处理。如果钩子方法或者回调函数执行抛出异常的话，内部工作线程可能转为失败并突然终止。
  *
  * <dt>Queue maintenance</dt>
  *
