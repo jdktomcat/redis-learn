@@ -106,34 +106,14 @@ import java.util.concurrent.locks.ReentrantLock;
  *添加日志实体。另外，方法terminated可以被重写来执行任意当执行器已经全部停掉之后需要做
  *的特殊处理。如果钩子方法或者回调函数执行抛出异常的话，内部工作线程可能转为失败并突然终止。
  *
- * <dt>Queue maintenance</dt>
  *
- * <dd>Method {@link #getQueue()} allows access to the work queue
- * for purposes of monitoring and debugging.  Use of this method for
- * any other purpose is strongly discouraged.  Two supplied methods,
- * {@link #remove(Runnable)} and {@link #purge} are available to
- * assist in storage reclamation when large numbers of queued tasks
- * become cancelled.</dd>
+ *队列维护：方法getQueue允许有目的访问工作队列，例如监控或者调试。不要使用这个方法用于其他目的，
+ *提供两个方法：remove(Runnable)和purge，用来帮助存储替换当大量队列任务变成取消状态。
  *
+ *结语：一个池对象如果在一个程序中没有被引用或者不存在线程时会被自动关闭。如果你想要保证未被引用
+ *的池可以被回收，即使用户忘了调用shutdown，那你必须整理未使用的线程最终死亡，通过设置合理
+ *存活时间，使用少量核心线程数或者设置allowCoreThreadTimeOut(boolean).
  *
- *
- * <dt>Finalization</dt>
- *
- * <dd>A pool that is no longer referenced in a program <em>AND</em>
- * has no remaining threads will be {@code shutdown} automatically. If
- * you would like to ensure that unreferenced pools are reclaimed even
- * if users forget to call {@link #shutdown}, then you must arrange
- * that unused threads eventually die, by setting appropriate
- * keep-alive times, using a lower bound of zero core threads and/or
- * setting {@link #allowCoreThreadTimeOut(boolean)}.  </dd>
- *
- * </dl>
- *
- * <p><b>Extension example</b>. Most extensions of this class
- * override one or more of the protected hook methods. For example,
- * here is a subclass that adds a simple pause/resume feature:
- *
- * <pre> {@code
  * class PausableThreadPoolExecutor extends ThreadPoolExecutor {
  *   private boolean isPaused;
  *   private ReentrantLock pauseLock = new ReentrantLock();
@@ -235,8 +215,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * below).
      */
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+
     private static final int COUNT_BITS = Integer.SIZE - 3;
+
     private static final int CAPACITY = (1 << COUNT_BITS) - 1;
+
 
     /**
      * runState is stored in the high-order bits
