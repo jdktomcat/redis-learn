@@ -20,7 +20,7 @@ public class PausableThreadPoolExecutor extends ThreadPoolExecutor {
 
 
     public PausableThreadPoolExecutor() {
-        super(5, 10, 10l, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>());
+        super(5, 10, 10L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>());
     }
 
     @Override
