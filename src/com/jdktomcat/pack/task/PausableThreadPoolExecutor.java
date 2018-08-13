@@ -23,11 +23,14 @@ public class PausableThreadPoolExecutor extends ThreadPoolExecutor {
         super(5, 10, 10l, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>());
     }
 
+    @Override
     protected void beforeExecute(Thread t, Runnable r) {
         super.beforeExecute(t, r);
         pauseLock.lock();
         try {
-            while (isPaused) unPaused.await();
+            while (isPaused) {
+                unPaused.await();
+            }
         } catch (InterruptedException ie) {
             t.interrupt();
         } finally {
