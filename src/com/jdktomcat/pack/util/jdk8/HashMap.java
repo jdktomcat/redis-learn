@@ -715,8 +715,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
         if (newThr == 0) {
             float ft = (float) newCap * loadFactor;
-            newThr = (newCap < MAXIMUM_CAPACITY && ft < (float) MAXIMUM_CAPACITY ?
-                    (int) ft : Integer.MAX_VALUE);
+            newThr = (newCap < MAXIMUM_CAPACITY && ft < (float) MAXIMUM_CAPACITY ? (int) ft : Integer.MAX_VALUE);
         }
         threshold = newThr;
         @SuppressWarnings({"rawtypes", "unchecked"})
@@ -951,26 +950,32 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         public final int size() {
             return size;
         }
+
         @Override
         public final void clear() {
             HashMap.this.clear();
         }
+
         @Override
         public final Iterator<K> iterator() {
             return new HashMap.KeyIterator();
         }
+
         @Override
         public final boolean contains(Object o) {
             return containsKey(o);
         }
+
         @Override
         public final boolean remove(Object key) {
             return removeNode(hash(key), key, null, false, true) != null;
         }
+
         @Override
         public final Spliterator<K> spliterator() {
             return new HashMap.KeySpliterator<>(HashMap.this, 0, -1, 0, 0);
         }
+
         @Override
         public final void forEach(Consumer<? super K> action) {
             HashMap.Node<K, V>[] tab;
@@ -1021,22 +1026,27 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         public final int size() {
             return size;
         }
+
         @Override
         public final void clear() {
             HashMap.this.clear();
         }
+
         @Override
         public final Iterator<V> iterator() {
             return new HashMap.ValueIterator();
         }
+
         @Override
         public final boolean contains(Object o) {
             return containsValue(o);
         }
+
         @Override
         public final Spliterator<V> spliterator() {
             return new HashMap.ValueSpliterator<>(HashMap.this, 0, -1, 0, 0);
         }
+
         @Override
         public final void forEach(Consumer<? super V> action) {
             HashMap.Node<K, V>[] tab;
@@ -1553,14 +1563,14 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     final class KeyIterator extends HashMap.HashIterator
             implements Iterator<K> {
         public final K next() {
-            return (K)nextNode().key;
+            return (K) nextNode().key;
         }
     }
 
     final class ValueIterator extends HashMap.HashIterator
             implements Iterator<V> {
         public final V next() {
-            return (V)nextNode().value;
+            return (V) nextNode().value;
         }
     }
 
