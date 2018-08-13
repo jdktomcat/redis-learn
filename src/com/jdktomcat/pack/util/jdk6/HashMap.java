@@ -1,4 +1,4 @@
-package com.jdktomcat.pack.util;
+package com.jdktomcat.pack.util.jdk6;
 
 import java.io.IOException;
 import java.io.Serializable;
