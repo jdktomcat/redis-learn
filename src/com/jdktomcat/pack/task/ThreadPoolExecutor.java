@@ -15,17 +15,17 @@ import java.util.concurrent.locks.ReentrantLock;
  * 线程池存在两个不同的问题：他们通常在执行大量异步任务时用来提升性能，由于减少每个任务
  * 调用消耗天花板，又提供了管理边界和资源，包括线程，消费任务。每一个ThreadPoolExecutor
  * 同时维护一些基本分析，例如已完成任务数量。
- *
+ * <p>
  * 为在一个广泛上下文保持可用，这个类提供了多个可调整的参数和可扩展的钩子。然而，编程者通常
  * 强烈倾向于使用更加方便的Executors类工厂方法：（Executors#newCachedThreadPool 无
  * 边界线程池，能够自动扩展线程数量。Executors#newFixedThreadPool 固定线程数量线程池
  * Executors#newSingleThreadExecutor 单线程池），为常用场景提供预设置。否则，使用以下
  * 指导当你需要手动配置调整这个类:
- *
+ * <p>
  * 核心与最大池大小
  * ThreadPoolExecutor能够自动调整池大小（getPoolSize），在corePoolSize与
  * maximumPoolSize之间。getCorePoolSize、getMaximumPoolSize
- *
+ * <p>
  * 当一个新任务被提交（#execute(Runnable)），如果目前池中线程数少于corePoolSize，
  * 将会创建一个新的线程来处理这个请求，即使其他的工作线程目前处于空闲状态。如果池中线程
  * 数多于corePoolSize少于maximumPoolSize的话，只有在工作队列满的情况下才会创建新
@@ -33,23 +33,23 @@ import java.util.concurrent.locks.ReentrantLock;
  * 有自动调整能力。如果你将maximumPoolSize设置为基本类型边界值（Integer.MAX_VALUE），
  * 你的池将能够容纳任意数量同步任务。通常，核心与最大池大小只能在构造器中设置，但是它们也可以
  * 动态调整使用setCorePoolSize和setMaximumPoolSize。
- *
+ * <p>
  * 按需构造
- *
+ * <p>
  * 默认情况下，核心线程被初始化创建并新任务到达时开始执行，但是这种可以被动态重置，通过
  * 使用方法（prestartCoreThread）或者（prestartAllCoreThreads）。你可能想预启动
  * 线程当你用非空队列构造线程池时。
- *
+ * <p>
  * 创建新线程
- *
+ * <p>
  * 新线程会被ThreadFactory创建，如果没有指定的话，将使用默认Executors#defaultThreadFactory，
  * 创建的线程在同一个线程组、一样优先级（NORM_PRIORITY）、非后台线程。如果指定一个不同的ThreadFactory,
  * 你可以修改线程的名称、线程组、优先级、后台线程等。如果线程工厂被请求创建线程失败，newThread返回null，执行
  * 器将继续执行，但是可能所有的任务会被执行。线程应该拥有修改线程运行时权限。如果工作线程或者其他线程使用线程池
  * 但是又没有获取这个权限，服务将被降解：配置修改可能不会及时生效，并且一个关闭池可能仍然处于未停止状态。
- *
+ * <p>
  * 存活时间
- *
+ * <p>
  * 如果池中现在有多于corePoolSize线程的话，超量的线程如果处于空闲状态超过配置时间
  * keepAliveTime（getKeepAliveTime(TimeUnit)）将被终止。这种方式提供了一个方
  * 法当线程池未被有效使用时，来减少资源消耗。如果以后线程池变成较活跃的话，新线程将被
@@ -57,35 +57,35 @@ import java.util.concurrent.locks.ReentrantLock;
  * 通过设置Long.MAX_VALUE TimeUnit#NANOSECONDS 将在从停止期到关闭都不会废弃。
  * 默认情况下，存活策略只适用于超出corePoolSize的线程，但是allowCoreThreadTimeOut
  * （boolean）方法也可以将core threads设置为这种存活策略，只要存活时间值不为0
- *
+ * <p>
  * 队列
- *
+ * <p>
  * 任意BlockingQueue都可以用来传送、包含提交任务。队列的使用与池大小存在内在联系：
  * 如果池中线程数量少于corePoolSize的话，执行器更偏向于添加新线程，而不是将请求放到队列。
  * 如果池中线程数量不少于corePoolSize的话，执行器更偏向于将请求放到队列中，而非新建线程。
  * 如果请求不能够放入到队列中，会创建一个新线程（线程数未达到maximumPoolSize，如果达到，
  * 任务将被拒绝。）
- *
+ * <p>
  * 有三种队列策略：
- *
+ * <p>
  * 直接切换：一种好的选择对于工作队列是一个SynchronousQueue（切换任务到线程而非保存它们）。
  * 这里，当没有线程能够立即执行他的话，尝试放置到队列中会失败，这样的话一个新线程将会被构建。
  * 这个策略能够防止查找当处理一批任务（可能它们有内部依赖）。直接切换通常需要无限制maximumPoolSize
  * 来防止拒绝新提交的任务。这同时反过来承认，当命令持续到达时，无限制线程可能性增长将比任务可以被执行
  * 更快。
- *
+ * <p>
  * 无边界队列：使用无边界队列（如LinkedBlockingQueue，没有预定义容量）将导致新任务在队列中等待，
  * 在所有的核心线程都在忙碌。因此，没有更多于核心线程数的线程被创建。（此时最大池线程数将不生效。）
  * 这种队列适用于那种之间完全独立的任务，也就是说任务不能影响其他任务的执行。例如，在一个网页服务器中。
  * 虽然说这种队列方式对于平息请求瞬间爆炸非常有用，但不得不承认存在一种肯能性，无边界队列在增长速度
  * 将会超过处理速度，当有命令源源不断到达时。
- *
+ * <p>
  * 有界队列：有界队列（如ArrayBlockingQueue）在当使用有限的maximumPoolSizes可以帮助阻止资源耗尽，
  * 但是很难去调整与控制。队列大小和池最大容量将会被彼此权衡：使用大队列和小池能够降低CPU使用率，OS资源，
  * 线程上下文切换开销，但是可能导致人为低吞吐量。如果任务经常阻塞（IO限制）系统将会安排比你预先允许更多的
  * 线程。使用小队列一般需要大池，提高CPU使用率，但是可能在上下文切换及排期上的开销增长到不可接受的地步，
  * 此时也会降低吞吐量。
- *
+ * <p>
  * 任务拒绝：在方法execute(Runnable)提交新任务时会被拒绝，当执行器已经被关闭或者当执行器使用有限制
  * 最大线程数和工作队列容量，并且已经饱和的情况时。在上面情形中，调用execute方法时，会调用
  * RejectedExecutionHandler#rejectedExecution(Runnable, ThreadPoolExecutor)方法，提供
@@ -93,64 +93,64 @@ import java.util.concurrent.locks.ReentrantLock;
  * 　　１.默认：java.util.concurrent.ThreadPoolExecutor.AbortPolicy，这种策略在调用execute
  * 　　　 方法时会抛出一个运行时异常RejectedExecutionException。
  * 　　２.java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy,调用线程自己去运行任务。
- * 	　　 这种策略提供了一种简单反馈控制机制：降低新任务提交速度。
- *    ３.java.util.concurrent.ThreadPoolExecutor.DiscardPolicy，任务不会被执行，简单丢弃。
- * 	　４.java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy，如果线程池没有被关
+ * 　　 这种策略提供了一种简单反馈控制机制：降低新任务提交速度。
+ * ３.java.util.concurrent.ThreadPoolExecutor.DiscardPolicy，任务不会被执行，简单丢弃。
+ * 　４.java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy，如果线程池没有被关
  * 　　　闭，在队列头部的任务将被丢弃，然后在重试提交，直到成功。
- *可以自己去自定义RejectedExecutionHandler，如果这么做的话需要特别注意策略设计只能适用于特定的容量
+ * 可以自己去自定义RejectedExecutionHandler，如果这么做的话需要特别注意策略设计只能适用于特定的容量
  * 或者队列策略。
- *
- *钩子方法：这类提供了protected可覆盖方法：beforeExecute(Thread, Runnable)、
- *afterExecute(Runnable, Throwable)，可以在每个提交任务运行之前和之后回调这两个方法。
- *这两个可以被用来操作执行环境，例如，重新初始化ThreadLocals变量，收集分析信息，或者
- *添加日志实体。另外，方法terminated可以被重写来执行任意当执行器已经全部停掉之后需要做
- *的特殊处理。如果钩子方法或者回调函数执行抛出异常的话，内部工作线程可能转为失败并突然终止。
- *
- *
- *队列维护：方法getQueue允许有目的访问工作队列，例如监控或者调试。不要使用这个方法用于其他目的，
- *提供两个方法：remove(Runnable)和purge，用来帮助存储替换当大量队列任务变成取消状态。
- *
- *结语：一个池对象如果在一个程序中没有被引用或者不存在线程时会被自动关闭。如果你想要保证未被引用
- *的池可以被回收，即使用户忘了调用shutdown，那你必须整理未使用的线程最终死亡，通过设置合理
- *存活时间，使用少量核心线程数或者设置allowCoreThreadTimeOut(boolean).
- *
+ * <p>
+ * 钩子方法：这类提供了protected可覆盖方法：beforeExecute(Thread, Runnable)、
+ * afterExecute(Runnable, Throwable)，可以在每个提交任务运行之前和之后回调这两个方法。
+ * 这两个可以被用来操作执行环境，例如，重新初始化ThreadLocals变量，收集分析信息，或者
+ * 添加日志实体。另外，方法terminated可以被重写来执行任意当执行器已经全部停掉之后需要做
+ * 的特殊处理。如果钩子方法或者回调函数执行抛出异常的话，内部工作线程可能转为失败并突然终止。
+ * <p>
+ * <p>
+ * 队列维护：方法getQueue允许有目的访问工作队列，例如监控或者调试。不要使用这个方法用于其他目的，
+ * 提供两个方法：remove(Runnable)和purge，用来帮助存储替换当大量队列任务变成取消状态。
+ * <p>
+ * 结语：一个池对象如果在一个程序中没有被引用或者不存在线程时会被自动关闭。如果你想要保证未被引用
+ * 的池可以被回收，即使用户忘了调用shutdown，那你必须整理未使用的线程最终死亡，通过设置合理
+ * 存活时间，使用少量核心线程数或者设置allowCoreThreadTimeOut(boolean).
+ * <p>
  * class PausableThreadPoolExecutor extends ThreadPoolExecutor {
- *   private boolean isPaused;
- *   private ReentrantLock pauseLock = new ReentrantLock();
- *   private Condition unpaused = pauseLock.newCondition();
- *
- *   public PausableThreadPoolExecutor(...) { super(...); }
- *
- *   protected void beforeExecute(Thread t, Runnable r) {
- *     super.beforeExecute(t, r);
- *     pauseLock.lock();
- *     try {
- *       while (isPaused) unpaused.await();
- *     } catch (InterruptedException ie) {
- *       t.interrupt();
- *     } finally {
- *       pauseLock.unlock();
- *     }
- *   }
- *
- *   public void pause() {
- *     pauseLock.lock();
- *     try {
- *       isPaused = true;
- *     } finally {
- *       pauseLock.unlock();
- *     }
- *   }
- *
- *   public void resume() {
- *     pauseLock.lock();
- *     try {
- *       isPaused = false;
- *       unpaused.signalAll();
- *     } finally {
- *       pauseLock.unlock();
- *     }
- *   }
+ * private boolean isPaused;
+ * private ReentrantLock pauseLock = new ReentrantLock();
+ * private Condition unpaused = pauseLock.newCondition();
+ * <p>
+ * public PausableThreadPoolExecutor(...) { super(...); }
+ * <p>
+ * protected void beforeExecute(Thread t, Runnable r) {
+ * super.beforeExecute(t, r);
+ * pauseLock.lock();
+ * try {
+ * while (isPaused) unpaused.await();
+ * } catch (InterruptedException ie) {
+ * t.interrupt();
+ * } finally {
+ * pauseLock.unlock();
+ * }
+ * }
+ * <p>
+ * public void pause() {
+ * pauseLock.lock();
+ * try {
+ * isPaused = true;
+ * } finally {
+ * pauseLock.unlock();
+ * }
+ * }
+ * <p>
+ * public void resume() {
+ * pauseLock.lock();
+ * try {
+ * isPaused = false;
+ * unpaused.signalAll();
+ * } finally {
+ * pauseLock.unlock();
+ * }
+ * }
  * }}</pre>
  *
  * @author Doug Lea
@@ -158,16 +158,16 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
-     *线程池主要控制状态，ctl，是一个原子整型，由两个概念属性组成：workerCount（有效线程数量）
+     * 线程池主要控制状态，ctl，是一个原子整型，由两个概念属性组成：workerCount（有效线程数量）
      * runState（状态运行、关闭等）。为了将这两个组装成一个整型，将限制workerCount最大为２
      * 的29次方－１（大概有500百万）线程而不是２的32次方－１（２０亿）要不然的话表示不了。
      * 如果这里在今后仍然是一个问题的话，这个变量将会改为AtomicLong类型，下面移位/掩码常量会作
      * 相应的调整。但是除非需求到了那个地步才会修改，目前使用整型比较快捷的。
-     *
+     * <p>
      * 属性workerCount是允许启动不允许停止的工作线程数量。该值可能会与真实活跃线程数量短暂不同，
      * 例如，当请求一个线程工厂创建线程失败时，当一个将要退出的线程在终止之前还在运行、记录。
      * 用户可见池大小是指目前执行线程集合大小.
-     *
+     * <p>
      * The runState provides the main lifecycle control, taking on values:
      * <p>
      * RUNNING:  Accept new tasks and process queued tasks
@@ -197,6 +197,13 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * Threads waiting in awaitTermination() will return when the
      * state reaches TERMINATED.
      * <p>
+     * runState提供了线程池生命周期控制，取值说明如下：
+     * RUNNING:接收新任务,处理队列任务。
+     * SHUTDOWN:不会再接收新任务,但会处理队列任务。
+     * STOP:不会再接收新任务,也不会处理队列任务,打断正在处理任务。
+     * TIDYING:所有的任务都已终止,workerCount值为0,线程转化为TIDYING状态,将会调用terminated()钩子方法。
+     * TERMINATED:terminated()方法已经被执行。
+     * <p>
      * Detecting the transition from SHUTDOWN to TIDYING is less
      * straightforward than you'd like because the queue may become
      * empty after non-empty and vice versa during SHUTDOWN state, but
@@ -206,33 +213,70 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      */
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
 
+    /**
+     * 统计位数:29
+     */
     private static final int COUNT_BITS = Integer.SIZE - 3;
 
+    /**
+     * 线程池最大容量2^29-1
+     */
     private static final int CAPACITY = (1 << COUNT_BITS) - 1;
 
 
     /**
-     * runState is stored in the high-order bits
+     * runState is stored in the high-order bits:-1^29
      */
     private static final int RUNNING = -1 << COUNT_BITS;
 
+    /**
+     * 0^29
+     */
     private static final int SHUTDOWN = 0 << COUNT_BITS;
 
+    /**
+     * 1^29
+     */
     private static final int STOP = 1 << COUNT_BITS;
 
+    /**
+     * 2^29
+     */
     private static final int TIDYING = 2 << COUNT_BITS;
 
+    /**
+     * 3^29
+     */
     private static final int TERMINATED = 3 << COUNT_BITS;
 
-    // Packing and unpacking ctl
+
+    /**
+     * 解析运行状态
+     *
+     * @param c ctl
+     * @return 运行状态
+     */
     private static int runStateOf(int c) {
         return c & ~CAPACITY;
     }
 
+    /**
+     * 解析执行数量
+     *
+     * @param c ctl
+     * @return 执行数量
+     */
     private static int workerCountOf(int c) {
         return c & CAPACITY;
     }
 
+    /**
+     * 计算ctl值
+     *
+     * @param rs 运行状态
+     * @param wc 执行数
+     * @return ctl
+     */
     private static int ctlOf(int rs, int wc) {
         return rs | wc;
     }
@@ -242,14 +286,34 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * These depend on the bit layout and on workerCount being never negative.
      */
 
+    /**
+     * 判断运行状态是否小于目标
+     *
+     * @param c ctl
+     * @param s runState 运行状态
+     * @return 比较结果
+     */
     private static boolean runStateLessThan(int c, int s) {
         return c < s;
     }
 
+    /**
+     * 判断运行状态是否不小于目标
+     *
+     * @param c ctl
+     * @param s runState 运行状态
+     * @return 比较结果
+     */
     private static boolean runStateAtLeast(int c, int s) {
         return c >= s;
     }
 
+    /**
+     * 判断是否RUNNING状态
+     *
+     * @param c ctl
+     * @return 是否
+     */
     private static boolean isRunning(int c) {
         return c < SHUTDOWN;
     }
@@ -272,6 +336,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * Decrements the workerCount field of ctl. This is called only on
      * abrupt termination of a thread (see processWorkerExit). Other
      * decrements are performed within getTask.
+     * 递减ctl的workerCount属性值。只有在突然中止线程时才会调用。
      */
     private void decrementWorkerCount() {
         do {
@@ -288,6 +353,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * queues such as DelayQueues for which poll() is allowed to
      * return null even if it may later return non-null when delays
      * expire.
+     * 这个队列用于容纳任务和管理处理线程。我们不想workQueue.poll()返回null除非
+     * workQueue.isEmpty()
      */
     private final BlockingQueue<Runnable> workQueue;
 
@@ -416,7 +483,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private static final RuntimePermission shutdownPerm = new RuntimePermission("modifyThread");
 
     /**
-     *  The context to be used when executing the finalizer, or null.
+     * The context to be used when executing the finalizer, or null.
      */
     private final AccessControlContext acc;
 
@@ -1014,7 +1081,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                 // if not, ensure thread is not interrupted.  This
                 // requires a recheck in second case to deal with
                 // shutdownNow race while clearing interrupt
-                if ((runStateAtLeast(ctl.get(), STOP) || (Thread.interrupted() && runStateAtLeast(ctl.get(), STOP))) && !wt.isInterrupted()) {
+                boolean isInterrupt = (runStateAtLeast(ctl.get(), STOP) || (Thread.interrupted() && runStateAtLeast(ctl.get(), STOP))) && !wt.isInterrupted();
+                if (isInterrupt) {
                     wt.interrupt();
                 }
                 try {
