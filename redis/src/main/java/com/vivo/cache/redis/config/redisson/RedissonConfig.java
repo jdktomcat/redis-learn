@@ -4,6 +4,12 @@ import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
+/**
+ * Redisson配置
+ *
+ * @author 汤旗
+ * @date 2019-05-11
+ */
 public class RedissonConfig {
 
     private Config config;
@@ -16,16 +22,10 @@ public class RedissonConfig {
 
     private RedissonConfig() {
         config = new Config();
-        config.useSingleServer().setAddress("redis://10.101.17.51:6379");
+        config.useSingleServer().setAddress("10.101.17.51:6379").setConnectionPoolSize(10);
     }
 
     public RedissonClient getClient() {
         return Redisson.create(config);
-    }
-
-    public void close() {
-        if (config != null) {
-
-        }
     }
 }

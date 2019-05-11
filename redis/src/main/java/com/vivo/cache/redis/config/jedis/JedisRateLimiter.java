@@ -25,13 +25,12 @@ public class JedisRateLimiter {
         SetParams setParams = new SetParams();
         setParams.ex(period).nx();
         jedis.set(key, "0", setParams);
-        return !(jedis.incr(key) > maxCount);
-
+        return jedis.incr(key) <= maxCount;
     }
 
     public static void main(String[] args) throws InterruptedException {
         Runnable runnable1 = () -> {
-            Jedis jedis = JedisConfig.getJedis();
+            Jedis jedis = JedisConfig.getSentinelJedis();
             for (int i = 0; i < 200; i++) {
                 System.out.println("线程1第" + i + "次操作结果:" + isActionAllowed("tq", "reply", 60, 25, jedis));
                 try {
@@ -45,7 +44,7 @@ public class JedisRateLimiter {
         new Thread(runnable1).start();
 
         Runnable runnable2 = () -> {
-            Jedis jedis = JedisConfig.getJedis();
+            Jedis jedis = JedisConfig.getSentinelJedis();
             for (int i = 0; i < 2000; i++) {
                 System.out.println("线程2第" + i + "次操作结果:" + isActionAllowed("tq", "reply", 60, 25, jedis));
                 try {

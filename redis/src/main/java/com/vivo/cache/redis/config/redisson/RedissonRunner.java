@@ -1,6 +1,8 @@
 package com.vivo.cache.redis.config.redisson;
 
+import org.redisson.Redisson;
 import org.redisson.api.RBitSet;
+import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 
 /**
@@ -11,13 +13,16 @@ import org.redisson.api.RedissonClient;
  */
 public class RedissonRunner {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         RedissonClient client = RedissonConfig.getInstance().getClient();
         RBitSet rBitSet = client.getBitSet("bit-set-key");
         for (int i = 0; i < 10; i++) {
             rBitSet.set(i, i % 2);
         }
-        
+
+        RSemaphore semaphore = client.getSemaphore("semaphore-key");
+        semaphore.acquire();
+        client.shutdown();
         System.out.println("done!!!");
     }
 }
