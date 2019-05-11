@@ -9,16 +9,12 @@ import redis.clients.jedis.Jedis;
  * @date 2019-05-10 16:11
  */
 public class JedisConfig {
-
-    private Jedis jedis;
-
-    private static JedisConfig ourInstance = new JedisConfig();
-
-    public static Jedis getInstance() {
-        return ourInstance.jedis;
+    public static Jedis getJedis() {
+        return new Jedis("10.101.17.51");
     }
-
-    private JedisConfig() {
-        jedis = new Jedis("10.101.25.169");
+    public static void close(Jedis jedis) {
+        if (jedis != null && jedis.isConnected()) {
+            jedis.close();
+        }
     }
 }

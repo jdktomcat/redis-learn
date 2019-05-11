@@ -14,8 +14,10 @@ public class RedissonRunner {
     public static void main(String[] args) {
         RedissonClient client = RedissonConfig.getInstance().getClient();
         RBitSet rBitSet = client.getBitSet("bit-set-key");
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10; i++) {
             rBitSet.set(i, i % 2);
         }
+        
+        System.out.println("done!!!");
     }
 }

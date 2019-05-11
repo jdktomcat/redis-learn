@@ -16,10 +16,16 @@ public class RedissonConfig {
 
     private RedissonConfig() {
         config = new Config();
-        config.useSingleServer().setAddress("redis://10.101.16.46:6379");
+        config.useSingleServer().setAddress("redis://10.101.17.51:6379");
     }
 
     public RedissonClient getClient() {
         return Redisson.create(config);
+    }
+
+    public void close() {
+        if (config != null) {
+
+        }
     }
 }

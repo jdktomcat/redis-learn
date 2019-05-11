@@ -32,9 +32,9 @@ public class SimpleRateLimiter {
     }
 
     public static void main(String[] args) {
-        SimpleRateLimiter limiter = new SimpleRateLimiter(JedisConfig.getInstance());
-        for (int i = 0; i < 20; i++) {
-            System.out.println(limiter.isActionAllowed("laoqian", "reply", 60, 5));
-        }
+//        SimpleRateLimiter limiter = new SimpleRateLimiter(JedisConfig.getInstance());
+//        for (int i = 0; i < 20; i++) {
+//            System.out.println(limiter.isActionAllowed("laoqian", "reply", 60, 5));
+//        }
     }
 }
